@@ -84,6 +84,12 @@ class TaskManager
         if (isset($this->tasks[$task])) unset($this->tasks[$task]);
     }
 
+    public function reloadTask()
+    {
+        $this->tasks = [];
+        $this->loadTasks();
+    }
+
     private function loadTasks()
     {
         $this->namespace = config('task.task_namespace');

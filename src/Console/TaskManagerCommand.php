@@ -22,7 +22,7 @@ class TaskManagerCommand extends Command
      */
     protected $description = 'Run the task manager';
 
-    protected $operates = ['start', 'stop', 'restart', 'status'];
+    protected $operates = ['start', 'stop', 'restart', 'status','reload'];
 
     /**
      * Execute the console command.
@@ -36,11 +36,11 @@ class TaskManagerCommand extends Command
             if (!in_array($operate, $this->operates)) {
                 throw new \InvalidArgumentException('Operation not supported!');
             }
-            Scheduler::{$operate}();
+            call_user_func([Scheduler::class,$operate]);
             $message = Scheduler::getMessage();
             if ($operate == 'status') {
                 if (isset($message[Scheduler::getMessageInfoLevel()]) && $info = json_decode($message[Scheduler::getMessageInfoLevel()][0], true)) {
-                    $headers = ['主进程号', '主进程名', '子协程数', '积压任务数', '开始时间', '当前时间', '运行时间'];;
+                    $headers = ['主进程号', '主进程名', '子协程数', '积压任务数', '开始时间', '当前时间', '运行时间'];
                     $this->table($headers, $info);
                 } else {
                     $this->info($message[Scheduler::getMessageErrorLevel()][0]);

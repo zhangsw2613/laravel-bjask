@@ -38,37 +38,31 @@ trait Plan
 
     public function everySecond(int $second)
     {
-        if (!$second) $second = 1;
         $this->place[self::$s] = $second;
     }
 
     public function everyMinute(int $minute)
     {
-        if (!$minute) $minute = 1;
         $this->place[self::$i] = $minute;
     }
 
     public function everyHour(int $hour)
     {
-        if (!$hour) $hour = 1;
         $this->place[self::$h] = $hour;
     }
 
     public function everyDay(int $day)
     {
-        if (!$day) $day = 1;
         $this->place[self::$d] = $day;
     }
 
     public function everyWeek(int $week)
     {
-        if (!$week) $week = 1;
         $this->place[self::$w] = $week;
     }
 
     public function everyMonth(int $month)
     {
-        if (!$month) $month = 1;
         $this->place[self::$m] = $month;
     }
 

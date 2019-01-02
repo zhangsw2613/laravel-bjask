@@ -84,6 +84,16 @@ class Scheduler
         $this->setMessage('获取进程状态信息失败', self::MESSAGE_ERROR);
     }
 
+    public function reload()
+    {
+        //发送用户自定义信号2
+        if ($this->sendSigno(SIGUSR2)) {
+            $this->setMessage('Reload task succeed！');
+            return;
+        }
+        $this->setMessage('Failed reload task', self::MESSAGE_ERROR);
+    }
+
     public function restart()
     {
         try {
@@ -133,6 +143,9 @@ class Scheduler
     {
         \swoole_process::signal(SIGUSR1, function () {//用户自定义信号
             $this->showStatus();
+        });
+        \swoole_process::signal(SIGUSR2, function () {//用户自定义信号2
+            $this->taskManager->reloadTask();
         });
         \swoole_process::signal(SIGTERM, function () {//主进程退出信号
             $this->stopMaster();
