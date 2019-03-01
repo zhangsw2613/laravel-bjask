@@ -51,11 +51,13 @@ class Scheduler
 
     public function start()
     {
+        $this->startMaster();
         try {
-            $this->startMaster();
-            $this->registTaskTick();
-            $this->registSignal();
-            $this->coManager->checkTask();
+            if(!empty($this->startRunTime)){
+                $this->registTaskTick();
+                $this->registSignal();
+                $this->coManager->checkTask();
+            }
         } catch (\Throwable $e) {
             $this->stopMaster();
             $this->setMessage($e->getMessage(), self::MESSAGE_ERROR);
@@ -107,16 +109,21 @@ class Scheduler
 
     public function startMaster()
     {
-        if ($this->getPidInfo($this->masterFilePath . DIRECTORY_SEPARATOR . $this->masterPidFile)) {
-            throw new \RuntimeException('A process is already running');
+        try {
+            if ($this->getPidInfo($this->masterFilePath . DIRECTORY_SEPARATOR . $this->masterPidFile)) {
+                throw new \RuntimeException('A process is already running');
+            }
+            \swoole_process::daemon();
+            $this->masterPid = getmypid();
+            $this->masterProcessName = config('task.process_name');
+            $this->setProcessName($this->masterProcessName);
+            $this->saveMasterInfo();
+            $this->startRunTime = date('Y-m-d H:i:s');
+            $this->setMessage('Task process run ok!');
+        } catch (\Throwable $e) {
+            $this->setMessage($e->getMessage(), self::MESSAGE_ERROR);
         }
-        \swoole_process::daemon();
-        $this->masterPid = getmypid();
-        $this->masterProcessName = config('task.process_name');
-        $this->setProcessName($this->masterProcessName);
-        $this->saveMasterInfo();
-        $this->startRunTime = date('Y-m-d H:i:s');
-        $this->setMessage('Task process run ok!');
+
     }
 
     public function stopMaster()
@@ -251,7 +258,7 @@ class Scheduler
      */
     private function putPidInfo(array $info, $file_name)
     {
-        return file_put_contents($file_name, \swoole_serialize::pack($info));
+        return @file_put_contents($file_name, serialize($info));
     }
 
     /**
@@ -262,7 +269,7 @@ class Scheduler
     private function getPidInfo($pid_file)
     {
         if (file_exists($pid_file)) {
-            return \swoole_serialize::unpack(file_get_contents($pid_file));
+            return unserialize(@file_get_contents($pid_file));
         }
         return false;
     }
